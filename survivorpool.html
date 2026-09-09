@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortal Locks - Survivor Pool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3b5998;
+            --dark-bg: #1a3a52;
+            --light-bg: #f5f5f5;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border: #ddd;
+            --success: #4CAF50;
+            --danger: #f44336;
+            --gray: #999;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: white;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: white;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 60px;
+        }
+
+        .screen {
+            display: none;
+            min-height: 100%;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login-screen {
+            background: var(--dark-bg);
+            color: white;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .hero-card {
+            background: rgba(255,255,255,0.95);
+            color: var(--text-primary);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .hero-card h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .hero-card .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .info-blocks {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .info-block {
+            background: var(--light-bg);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-block .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-block .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 89, 152, 0.1);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        /* ===== BUTTON STYLES ===== */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2d4373;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-filter {
+            padding: 8px 16px;
+            font-size: 13px;
+            background: white;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-filter.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* ===== PICK SCREEN ===== */
+        .pick-screen .header {
+            position: relative;
+        }
+
+        .week-selector {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .week-selector:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .filters {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .team-grid {
+            padding: 16px;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 16px;
+            margin-bottom: 12px;
+        }
+
+        .teams {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .team-btn {
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .team-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+        }
+
+        .team-btn.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .team-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f0f0f0;
+        }
+
+        .team-code {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .team-name {
+            display: block;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .selection-summary {
+            position: fixed;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            background: var(--light-bg);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .selection-summary strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        /* ===== STANDINGS SCREEN ===== */
+        .standings-screen .content {
+            padding: 0;
+        }
+
+        .stats-boxes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 16px;
+            background: var(--light-bg);
+        }
+
+        .stat-box {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .standings-table {
+            width: 100%;
+            padding: 16px;
+        }
+
+        .standings-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .standings-table th {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 2px solid var(--border);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .standings-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .player-row {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .player-row:hover {
+            background: var(--light-bg);
+        }
+
+        .player-row.out {
+            opacity: 0.6;
+        }
+
+        .player-row.out .player-name {
+            text-decoration: line-through;
+        }
+
+        .player-name {
+            font-weight: 500;
+        }
+
+        .player-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .player-status.active {
+            background: #e3f2fd;
+            color: var(--primary);
+        }
+
+        .player-status.out {
+            background: #f5f5f5;
+            color: var(--gray);
+        }
+
+        .player-status.bought-back {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .buyback-message {
+            background: #ffebee;
+            border-left: 4px solid var(--danger);
+            padding: 16px;
+            margin: 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .buyback-message strong {
+            color: var(--danger);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* ===== ADMIN SCREEN ===== */
+        .admin-screen .content {
+            padding: 16px;
+        }
+
+        .admin-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .admin-section .section-number {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .admin-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .admin-section .description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .admin-form {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .admin-form select,
+        .admin-form input {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .admin-form select {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .admin-form .label-small {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .vs-text {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .impact-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 8px;
+            background: var(--light-bg);
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .admin-form .btn {
+            flex: 0 0 auto;
+            min-width: 100px;
+            white-space: nowrap;
+        }
+
+        .results-display {
+            background: var(--light-bg);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-primary);
+            margin-top: 12px;
+        }
+
+        /* ===== BOTTOM NAVIGATION ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background: white;
+            border-top: 1px solid var(--border);
+            height: 50px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            border-top: 3px solid transparent;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            border-top-color: var(--primary);
+        }
+
+        .nav-item:hover {
+            background: var(--light-bg);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            .teams {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+
+            .info-blocks {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-boxes {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-form {
+                flex-direction: column;
+            }
+
+            .admin-form select,
+            .admin-form input {
+                width: 100%;
+            }
+
+            .admin-form .btn {
+                width: 100%;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+
+        .error {
+            background: #ffebee;
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px;
+            font-size: 13px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: var(--success);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <div class="header" id="header">
+            <h1 id="header-title">MORTAL LOCKS</h1>
+            <p id="header-subtitle"></p>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content" id="content">
+            <!-- LOGIN SCREEN -->
+            <div class="screen login-screen active" id="login-screen">
+                <div class="hero-card">
+                    <h1>MORTAL LOCKS</h1>
+                    <p class="subtitle">One team a week. Never the same team twice. Lose once and you're out.</p>
+                    <div class="info-blocks">
+                        <div class="info-block">
+                            <div class="label">Entry</div>
+                            <div class="value">$25</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="label">Buyback</div>
+                            <div class="value">$10</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="label">Deadline</div>
+                            <div class="value">Sun 1 PM</div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="player-name">Player Name</label>
+                        <input type="text" id="player-name" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="player-code">Code</label>
+                        <input type="text" id="player-code" placeholder="4-digit code" maxlength="4" inputmode="numeric" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Log In</button>
+                    <p class="help-text">New player? Any name + code becomes your login.</p>
+                </form>
+            </div>
+
+            <!-- PICK SCREEN -->
+            <div class="screen pick-screen" id="pick-screen">
+                <select class="week-selector" id="pick-week-selector">
+                    <option value="1">Week 1</option>
+                    <option value="2">Week 2</option>
+                    <option value="3">Week 3</option>
+                    <option value="4" selected>Week 4</option>
+                </select>
+
+                <div class="filters" id="filters"></div>
+
+                <div class="team-grid" id="team-grid"></div>
+
+                <div class="selection-summary" id="selection-summary"></div>
+            </div>
+
+            <!-- STANDINGS SCREEN -->
+            <div class="screen standings-screen" id="standings-screen">
+                <div class="stats-boxes" id="stats-boxes"></div>
+
+                <div id="buyback-alert"></div>
+
+                <div class="standings-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Player</th>
+                                <th>W</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standings-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ADMIN SCREEN -->
+            <div class="screen admin-screen" id="admin-screen">
+                <select class="week-selector" id="admin-week-selector" style="position: static; margin-bottom: 16px; width: 100%; max-width: 200px;">
+                    <option value="1">Week 1</option>
+                    <option value="2">Week 2</option>
+                    <option value="3">Week 3</option>
+                    <option value="4" selected>Week 4</option>
+                </select>
+
+                <div class="admin-section">
+                    <div class="section-number">01 - ENTER GAME RESULT</div>
+                    <h3>Set a winner</h3>
+                    <p class="description">Everyone who picked the loser is eliminated.</p>
+
+                    <div class="admin-form">
+                        <div style="flex: 1; min-width: 120px;">
+                            <div class="label-small">Winner</div>
+                            <select id="winner-select">
+                                <option value="">Select winner</option>
+                            </select>
+                        </div>
+                        <span class="vs-text">def.</span>
+                        <div style="flex: 1; min-width: 120px;">
+                            <div class="label-small">Loser</div>
+                            <select id="loser-select">
+                                <option value="">Select loser</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="set-result-btn" style="flex: 0 0 auto; width: auto; padding: 10px 20px;">Set result</button>
+                    </div>
+
+                    <div class="impact-text" id="impact-text"></div>
+                    <div class="results-display" id="results-display"></div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="section-number">02 - PROCESS BUYBACK</div>
+                    <h3>Re-enter a player</h3>
+                    <p class="description">$10 weeks 1-7 only, collected outside the app.</p>
+
+                    <div class="admin-form">
+                        <div style="flex: 1; min-width: 120px;">
+                            <div class="label-small">Player</div>
+                            <select id="buyback-player-select">
+                                <option value="">Select player</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 120px;">
+                            <div class="label-small">Code</div>
+                            <input type="text" id="buyback-code-input" placeholder="4-digit code" maxlength="4" inputmode="numeric">
+                        </div>
+                        <button type="button" class="btn btn-primary" id="process-buyback-btn" style="flex: 0 0 auto; width: auto; padding: 10px 20px;">Process</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <div class="bottom-nav" id="bottom-nav">
+            <div class="nav-item active" data-screen="pick">✓ PICK</div>
+            <div class="nav-item" data-screen="standings">STANDINGS</div>
+            <div class="nav-item" data-screen="admin">ADMIN</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'https://mortal-locks-survivor-pool.onrender.com/api';
+
+        // In-memory storage fallback for data: URLs
+        let memoryStorage = {};
+
+        // Wrapper for localStorage with fallback
+        const storage = {
+            getItem: (key) => {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    return memoryStorage[key] || null;
+                }
+            },
+            setItem: (key, value) => {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {
+                    memoryStorage[key] = value;
+                }
+            }
+        };
+
+        // State
+        let appState = {
+            currentPlayer: null,
+            currentWeek: 4,
+            selectedTeam: null,
+            players: [],
+            teams: [],
+            standings: [],
+            picks: {},
+            isAdmin: false
+        };
+
+        // Load saved player
+        function loadPlayer() {
+            const saved = storage.getItem('mortal-locks-player');
+            if (saved) {
+                appState.currentPlayer = JSON.parse(saved);
+                appState.isAdmin = appState.currentPlayer.code === '9999';
+                return true;
+            }
+            return false;
+        }
+
+        // Save player
+        function savePlayer(name, code) {
+            appState.currentPlayer = { name, code };
+            appState.isAdmin = code === '9999';
+            storage.setItem('mortal-locks-player', JSON.stringify(appState.currentPlayer));
+        }
+
+        // Initialize teams
+        async function initializeTeams() {
+            const teams = [
+                // AFC
+                { code: 'BAL', name: 'Ravens', conference: 'AFC' },
+                { code: 'BUF', name: 'Bills', conference: 'AFC' },
+                { code: 'KC', name: 'Chiefs', conference: 'AFC' },
+                { code: 'MIA', name: 'Dolphins', conference: 'AFC' },
+                { code: 'NE', name: 'Patriots', conference: 'AFC' },
+                { code: 'NYJ', name: 'Jets', conference: 'AFC' },
+                { code: 'PIT', name: 'Steelers', conference: 'AFC' },
+                { code: 'CLE', name: 'Browns', conference: 'AFC' },
+                { code: 'HOU', name: 'Texans', conference: 'AFC' },
+                { code: 'IND', name: 'Colts', conference: 'AFC' },
+                { code: 'JAX', name: 'Jaguars', conference: 'AFC' },
+                { code: 'TEN', name: 'Titans', conference: 'AFC' },
+                { code: 'DEN', name: 'Broncos', conference: 'AFC' },
+                { code: 'LAC', name: 'Chargers', conference: 'AFC' },
+                { code: 'LV', name: 'Raiders', conference: 'AFC' },
+                // NFC
+                { code: 'DAL', name: 'Cowboys', conference: 'NFC' },
+                { code: 'PHI', name: 'Eagles', conference: 'NFC' },
+                { code: 'WAS', name: 'Commanders', conference: 'NFC' },
+                { code: 'NYG', name: 'Giants', conference: 'NFC' },
+                { code: 'MIN', name: 'Vikings', conference: 'NFC' },
+                { code: 'DET', name: 'Lions', conference: 'NFC' },
+                { code: 'GB', name: 'Packers', conference: 'NFC' },
+                { code: 'CHI', name: 'Bears', conference: 'NFC' },
+                { code: 'NO', name: 'Saints', conference: 'NFC' },
+                { code: 'TB', name: 'Buccaneers', conference: 'NFC' },
+                { code: 'CAR', name: 'Panthers', conference: 'NFC' },
+                { code: 'ATL', name: 'Falcons', conference: 'NFC' },
+                { code: 'LAR', name: 'Rams', conference: 'NFC' },
+                { code: 'SF', name: '49ers', conference: 'NFC' },
+                { code: 'SEA', name: 'Seahawks', conference: 'NFC' }
+            ];
+            appState.teams = teams;
+            return teams;
+        }
+
+        // Get all teams for dropdowns
+        function getAllTeams() {
+            return appState.teams.map(t => t.code + ' - ' + t.name);
+        }
+
+        // Screen navigation
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${screenName}-screen`).classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.screen === screenName) {
+                    item.classList.add('active');
+                }
+            });
+
+            appState.currentScreen = screenName;
+
+            // Update header
+            updateHeader();
+
+            // Load screen-specific data
+            if (screenName === 'pick') {
+                renderPickScreen();
+            } else if (screenName === 'standings') {
+                renderStandingsScreen();
+            } else if (screenName === 'admin') {
+                if (!appState.isAdmin) {
+                    showScreen('pick');
+                    return;
+                }
+                renderAdminScreen();
+            }
+        }
+
+        function updateHeader() {
+            const header = document.getElementById('header');
+            const title = document.getElementById('header-title');
+            const subtitle = document.getElementById('header-subtitle');
+
+            if (appState.currentScreen === 'pick') {
+                title.textContent = `WEEK ${appState.currentWeek} - PICK ONE TEAM TO WIN`;
+                subtitle.textContent = '';
+                header.style.display = 'block';
+            } else if (appState.currentScreen === 'standings') {
+                title.textContent = 'THROUGH WEEK 3';
+                subtitle.textContent = '';
+                header.style.display = 'block';
+            } else if (appState.currentScreen === 'admin') {
+                title.textContent = 'COMMISSIONER - CODE 9999';
+                subtitle.textContent = '';
+                header.style.display = 'block';
+            } else if (appState.currentScreen === 'login') {
+                header.style.display = 'none';
+            }
+        }
+
+        // Render Pick Screen
+        function renderPickScreen() {
+            const filterContainer = document.getElementById('filters');
+            const teamGridContainer = document.getElementById('team-grid');
+
+            // Clear and render filters
+            filterContainer.innerHTML = '';
+            const filters = ['Open', 'Selected', 'Used', 'Lost'];
+            filters.forEach(filter => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-filter';
+                btn.textContent = filter;
+                btn.type = 'button';
+                btn.onclick = () => {
+                    btn.classList.toggle('active');
+                    renderTeamGrid();
+                };
+                filterContainer.appendChild(btn);
+            });
+
+            renderTeamGrid();
+            updateSelectionSummary();
+        }
+
+        function renderTeamGrid() {
+            const teamGridContainer = document.getElementById('team-grid');
+            teamGridContainer.innerHTML = '';
+
+            const afc = appState.teams.filter(t => t.conference === 'AFC');
+            const nfc = appState.teams.filter(t => t.conference === 'NFC');
+
+            const afcSection = document.createElement('div');
+            afcSection.innerHTML = '<div class="section-label">AFC</div>';
+            const afcTeams = document.createElement('div');
+            afcTeams.className = 'teams';
+            afc.forEach(team => {
+                const btn = createTeamButton(team);
+                afcTeams.appendChild(btn);
+            });
+            afcSection.appendChild(afcTeams);
+            teamGridContainer.appendChild(afcSection);
+
+            const nfcSection = document.createElement('div');
+            nfcSection.innerHTML = '<div class="section-label">NFC</div>';
+            const nfcTeams = document.createElement('div');
+            nfcTeams.className = 'teams';
+            nfc.forEach(team => {
+                const btn = createTeamButton(team);
+                nfcTeams.appendChild(btn);
+            });
+            nfcSection.appendChild(nfcTeams);
+            teamGridContainer.appendChild(nfcSection);
+        }
+
+        function createTeamButton(team) {
+            const btn = document.createElement('button');
+            btn.className = 'team-btn';
+            btn.type = 'button';
+            btn.innerHTML = `<span class="team-code">${team.code}</span><span class="team-name">${team.name}</span>`;
+
+            if (appState.selectedTeam === team.code) {
+                btn.classList.add('selected');
+            }
+
+            btn.onclick = () => {
+                appState.selectedTeam = team.code;
+                renderTeamGrid();
+                updateSelectionSummary();
+            };
+
+            return btn;
+        }
+
+        function updateSelectionSummary() {
+            const summary = document.getElementById('selection-summary');
+            if (appState.selectedTeam) {
+                const team = appState.teams.find(t => t.code === appState.selectedTeam);
+                summary.innerHTML = `
+                    <strong>WEEK ${appState.currentWeek} PICK: ${team.code} - ${team.name}</strong>
+                    Locks Sun 1:00 PM ET - 24 hrs
+                    <button type="button" class="btn btn-primary confirm-btn" onclick="submitPick()">Confirm</button>
+                `;
+            } else {
+                summary.innerHTML = 'Select a team to continue';
+            }
+        }
+
+        function submitPick() {
+            if (!appState.selectedTeam) return;
+            alert(`Pick submitted: ${appState.selectedTeam} for Week ${appState.currentWeek}`);
+            appState.selectedTeam = null;
+            renderPickScreen();
+        }
+
+        // Render Standings Screen
+        function renderStandingsScreen() {
+            const statsContainer = document.getElementById('stats-boxes');
+            statsContainer.innerHTML = `
+                <div class="stat-box">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">ALIVE</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">OUT</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">$225</div>
+                    <div class="stat-label">POOL</div>
+                </div>
+            `;
+
+            const buybackAlert = document.getElementById('buyback-alert');
+            buybackAlert.innerHTML = `
+                <div class="buyback-message">
+                    <strong>YOU'RE OUT - WEEK 2</strong>
+                    Buyback available through week 7 - $10 buyback
+                </div>
+            `;
+
+            const tbody = document.getElementById('standings-tbody');
+            tbody.innerHTML = `
+                <tr class="player-row">
+                    <td>1</td>
+                    <td class="player-name">Alice Johnson</td>
+                    <td>4</td>
+                    <td><span class="player-status active">Active</span></td>
+                </tr>
+                <tr class="player-row">
+                    <td>2</td>
+                    <td class="player-name">Bob Smith</td>
+                    <td>4</td>
+                    <td><span class="player-status active">Active</span></td>
+                </tr>
+                <tr class="player-row out">
+                    <td>3</td>
+                    <td class="player-name">Charlie Brown</td>
+                    <td>2</td>
+                    <td><span class="player-status out">Out</span></td>
+                </tr>
+                <tr class="player-row">
+                    <td>4</td>
+                    <td class="player-name">Diana Prince</td>
+                    <td>3</td>
+                    <td><span class="player-status active">Active</span></td>
+                </tr>
+                <tr class="player-row">
+                    <td>5</td>
+                    <td class="player-name">Eve Davis</td>
+                    <td>3</td>
+                    <td><span class="player-status bought-back">Bought back</span></td>
+                </tr>
+            `;
+        }
+
+        // Render Admin Screen
+        function renderAdminScreen() {
+            const winnerSelect = document.getElementById('winner-select');
+            const loserSelect = document.getElementById('loser-select');
+            const buybackSelect = document.getElementById('buyback-player-select');
+
+            winnerSelect.innerHTML = '<option value="">Select winner</option>';
+            loserSelect.innerHTML = '<option value="">Select loser</option>';
+            buybackSelect.innerHTML = '<option value="">Select player</option>';
+
+            appState.teams.forEach(team => {
+                const option1 = document.createElement('option');
+                option1.value = team.code;
+                option1.textContent = team.code + ' - ' + team.name;
+                winnerSelect.appendChild(option1.cloneNode(true));
+                loserSelect.appendChild(option1.cloneNode(true));
+            });
+
+            // Sample players for buyback
+            ['Alice Johnson', 'Bob Smith', 'Charlie Brown'].forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                buybackSelect.appendChild(option);
+            });
+
+            // Update impact text when loser is selected
+            loserSelect.onchange = updateImpactText;
+        }
+
+        function updateImpactText() {
+            const loserSelect = document.getElementById('loser-select');
+            const impactText = document.getElementById('impact-text');
+            if (loserSelect.value) {
+                impactText.innerHTML = `3 players picked ${loserSelect.value} this week → will be eliminated`;
+            } else {
+                impactText.innerHTML = '';
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('player-name').value;
+            const code = document.getElementById('player-code').value;
+            savePlayer(name, code);
+            showScreen('pick');
+        });
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                showScreen(item.dataset.screen);
+            });
+        });
+
+        document.getElementById('pick-week-selector').addEventListener('change', (e) => {
+            appState.currentWeek = parseInt(e.target.value);
+            updateHeader();
+        });
+
+        document.getElementById('admin-week-selector').addEventListener('change', (e) => {
+            appState.currentWeek = parseInt(e.target.value);
+            updateHeader();
+        });
+
+        document.getElementById('set-result-btn').addEventListener('click', () => {
+            const winner = document.getElementById('winner-select').value;
+            const loser = document.getElementById('loser-select').value;
+            if (!winner || !loser) {
+                alert('Please select both winner and loser');
+                return;
+            }
+            alert(`Result set: ${winner} def. ${loser}`);
+            document.getElementById('results-display').innerHTML = `Week ${appState.currentWeek}: ${winner} def. ${loser}`;
+        });
+
+        document.getElementById('process-buyback-btn').addEventListener('click', () => {
+            const player = document.getElementById('buyback-player-select').value;
+            const code = document.getElementById('buyback-code-input').value;
+            if (!player || !code) {
+                alert('Please select player and enter code');
+                return;
+            }
+            alert(`Buyback processed for ${player}`);
+            document.getElementById('buyback-player-select').value = '';
+            document.getElementById('buyback-code-input').value = '';
+        });
+
+        // Initialize app
+        function initApp() {
+            initializeTeams();
+            if (loadPlayer()) {
+                showScreen('pick');
+            } else {
+                showScreen('login');
+            }
+        }
+
+        // Start app
+        initApp();
+    </script>
+</body>
+</html>
